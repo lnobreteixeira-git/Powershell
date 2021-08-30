@@ -6,7 +6,7 @@ $server = Get-Content servers.txt
 
  
 
-foreach($server in $servers){
+foreach($server in $server){
 
  
 
@@ -46,7 +46,7 @@ $conecta = Test-Connection -ComputerName $server -Count 1 -Quiet
 
  
 
-        foreach ($service in $services){
+        foreach ($service in $service){
 
         $status = Get-Service $service.Name -ComputerName $server
 
