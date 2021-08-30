@@ -44,6 +44,7 @@ $conecta = Test-Connection -ComputerName $server -Count 1 -Quiet
 
         Write-Host "O $server JÁ REINICIOU, VAMOS VALIDAR OS SERVIÇOS"
 
+Sleep 90
  
 
         foreach ($service in $service){
