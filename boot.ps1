@@ -1,8 +1,4 @@
-# parte 1 = lista de servidores
-
 $server = Get-Content servers.txt
-
- 
 
  
 
@@ -10,27 +6,29 @@ foreach($server in $server){
 
  
 
-$services = Get-Service -ComputerName $server |Where-Object {$_.Status -eq "Running"}
+$service = Get-Service -ComputerName $server |Where-Object {$_.Status -eq "Running"}
 
  
 
-Restart-Computer -ComputerName $server -Force -Credential
+Restart-Computer -ComputerName $server -Force
 
  
 
- 
-
-Write-Host "Servidor Reiniciando"
+Write-Host "Servidor $server reiniciando ..."
 
  
 
-# Aguarda 60 sgundos
-
-sleep 60
+# Aguardar o tempo de 60 segundos para que o serviço de RDP baixe ou baixar o serviço antes de reiniciar a máquina ai sim pode-se retirar o sleep 60 abaixo:
 
  
 
-#testando a conexão depois do boot
+sleep 90
+
+ 
+
+#testando a conexao depois do boot
+
+ 
 
 $conecta = Test-Connection -ComputerName $server -Count 1 -Quiet
 
@@ -38,47 +36,73 @@ $conecta = Test-Connection -ComputerName $server -Count 1 -Quiet
 
     if (($conecta) -ne "True" ){
 
-        Write-Host "O $server ESTA REINICIANDO"}
+                                 Write-Host "O $server ESTA REINICIANDO"
+
+                       }
 
     else{
 
-        Write-Host "O $server JÁ REINICIOU, VAMOS VALIDAR OS SERVIÇOS"
+         do {
 
-Sleep 90
+              $rdp = Test-NetConnection $server -CommonTCPPort RDP -ErrorAction Continue;  
+
+             Write-Host "Aguardando Subir RDP ...";
+
+             ($rdp).TCPTestSucceeded;
+
+            }
+
+         while ( ($rdp).TCPTestSucceeded -ne "True" )
+
+        
+
+        Write-Host "O $server JA REINICIOU, VAMOS VALIDAR OS SERVICOS"
+
+        
+
+        # o sleep abaixo é obrigatório para garantir que os serviços já subiram
+
+        sleep 30
+
  
 
         foreach ($service in $service){
 
+        sleep 1
+
+ 
+
         $status = Get-Service $service.Name -ComputerName $server
 
-         if ($status.Status -ne "Running") {
+        if ($status.Status -ne "Running") {
 
-             Write-Host "O service" $service.Name "nao esta rodando"
+                                             Write-Host "O service" $service.Name "nao esta rodando"
 
-             Write-Host "Iniciando o processo de start do $service"
+                                             Write-Host "Iniciando o processo de start do $service"
 
-         try {
+             try {
 
-            Get-Service $service -ComputerName $server |Start-Service -ErrorAction Stop
+                  Get-Service $service -ComputerName $server |Start-Service -ErrorAction Stop
 
-        }
+                 }
 
-         catch {
+ 
 
-            Write-Host "Ocorreu erro para subir o servico" $service.Name
+             catch {
 
-        }
+                    Write-Host "Ocorreu erro para subir o servico" $service.Name
 
-       
+                   }
 
-    } else {
+         }  
 
-       Write-Host "BOOT REALIZADO COM SUCESSO NO SERVIDOR $server"
+  }  # fechamento de laco do foreach service in service
 
-            }
+ 
 
-        }
+  }  # senao do if conect ne True
 
-    }
+  Write-Host "BOOT REALIZADO COM SUCESSO NO SERVIDOR $server"
 
-}
+}  # fechamento de laco do foreach server in server
+ 
