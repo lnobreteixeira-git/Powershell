@@ -82,7 +82,7 @@ $conecta = Test-Connection -ComputerName $server -Count 1 -Quiet
 
              try {
 
-                  Get-Service $service -ComputerName $server |Start-Service -ErrorAction Stop
+                  Get-Service $service.Name -ComputerName $server |Start-Service -ErrorAction Stop
 
                  }
 
